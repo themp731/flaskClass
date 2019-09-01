@@ -12,6 +12,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'pl
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
+
 # CLI COMMANDS
 @app.cli.command('db_create')
 def db_create():
@@ -94,12 +95,42 @@ def url_variables(name: str, age: int):
     else:
         return jsonify(message="Welcome " + name + ", prepare to enter")
 
+
 # A GET ONLY
 @app.route('/planets', methods=['GET'])
 def planets():
     planets_list = Planets.query.all()
     result = planets_schema.dump(planets_list)
     return jsonify(result)
+
+# Login Route
+@app.route('/register', methods=['POST'])
+def register():
+    email = request.form['email']
+    test = User.query.filter_by(email=email).first()
+    if test:
+        return jsonify(message="That email already exists"), 409
+    else:
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+        password = request.form['password']
+        user = User(first_name=first_name, last_name=last_name, password=password, email=email)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify(message="User Created Successfully"), 201
+
+@app.route('/delete_user', methods=['DELETE'])
+def delete_user():
+    email = request.form['email']
+    test = User.query.filter_by(email=email).first()
+    if test is None:
+        return jsonify("No existing user")
+    else:
+        user_to_delete = User.query.filter_by(email=email).first()
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        return jsonify(message="User with the email: " + email + " has been deleted")
 
 
 
@@ -122,6 +153,7 @@ class Planets(db.Model):
     mass = Column(Float)
     radius = Column(Float)
     distance = Column(Float)
+
 
 class UserSchema(ma.Schema):
     class Meta:
