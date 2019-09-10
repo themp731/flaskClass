@@ -49,23 +49,26 @@ def db_drop():
 @app.cli.command('db_seed')
 def db_seed():
     mercury = Planets(planet_name='Mercury',
-                      planet_type='Class D',
-                      home_star='Sol',
-                      mass=3.258e23,
-                      radius=1516,
-                      distance=35.96e6)
+                     planet_type='Class D',
+                     home_star='Sol',
+                     mass=2.258e23,
+                     radius=1516,
+                     distance=35.98e6)
+
     venus = Planets(planet_name='Venus',
-                    planet_type='Class K',
-                    home_star='Sol',
-                    mass=4.8658e24,
-                    radius=3760,
-                    distance=67.24e6)
+                         planet_type='Class K',
+                         home_star='Sol',
+                         mass=4.867e24,
+                         radius=3760,
+                         distance=67.24e6)
+
     earth = Planets(planet_name='Earth',
-                    planet_type='Class M',
-                    home_star='Sol',
-                    mass=5.97e24,
-                    radius=3959,
-                    distance=92.96e6)
+                     planet_type='Class M',
+                     home_star='Sol',
+                     mass=5.972e24,
+                     radius=3959,
+                     distance=92.96e6)
+
     db.session.add(mercury)
     db.session.add(venus)
     db.session.add(earth)
@@ -178,6 +181,16 @@ def login():
         return jsonify(message="Login Successful", access_token=access_token)
     else:
         return jsonify(message="Invalid Login"), 404
+
+
+@app.route('/planet_details/<int:planet_id>', methods=["GET"])
+def planet_details(planet_id: int):
+    planet = Planets.query.filter_by(planet_id=planet_id)
+    if planet:
+        result = planet_schema.dump(planet)
+        return jsonify(result.data)
+    else:
+        return jsonify(message="That planet does not exist"), 404
 
 
 # Database Models
