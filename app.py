@@ -183,14 +183,34 @@ def login():
         return jsonify(message="Invalid Login"), 404
 
 
-@app.route('/planet_details/<int:planet_id>', methods=["GET"])
-def planet_details(planet_id: int):
-    planet = Planets.query.filter_by(planet_id=planet_id)
+@app.route('/planet_details/<int:planet_num>', methods=["GET"])
+def planet_details(planet_num: int):
+    planet = Planets.query.filter_by(planet_id=planet_num).first()
     if planet:
         result = planet_schema.dump(planet)
-        return jsonify(result.data)
+        return jsonify(result) # no need to ask for data
     else:
         return jsonify(message="That planet does not exist"), 404
+
+
+@app.route('/add_planet', methods=['POST'])
+def add_planet():
+    planet_name = request.form['planet_name']
+    test = Planets.query.filter_by(planet_name=planet_name).first()
+    if test:
+        return jsonify(message="There is already a planet with that name"), 409
+    else:
+        planet_type = request.form['planet_type']
+        home_star = request.form['home_star']
+        mass = float(request.form['mass'])
+        radius = float(request.form['radius'])
+        distance = float(request.form['distance'])
+
+        new_planet = Planets(planet_name=planet_name, planet_type=planet_type, home_star=home_star,
+                             mass=mass, radius=radius, distance=distance)
+        db.session.add(new_planet)
+        db.session.commit()
+        return jsonify(message="Planet Added"), 201
 
 
 # Database Models
