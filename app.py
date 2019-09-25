@@ -194,6 +194,7 @@ def planet_details(planet_num: int):
 
 
 @app.route('/add_planet', methods=['POST'])
+@jwt_required
 def add_planet():
     planet_name = request.form['planet_name']
     test = Planets.query.filter_by(planet_name=planet_name).first()
@@ -211,6 +212,34 @@ def add_planet():
         db.session.add(new_planet)
         db.session.commit()
         return jsonify(message="Planet Added"), 201
+
+@app.route('/update_planet', methods=['PUT'])
+@jwt_required
+def update_planet():
+    planet_id = int(request.form['planet_id'])
+    planet = Planets.query.filter_by(planet_id=planet_id).first()
+    if planet:
+        planet.planet_type = request.form['planet_type']
+        planet.home_star = request.form['home_star']
+        planet.mass = float(request.form['mass'])
+        planet.radius = float(request.form['radius'])
+        planet.distance = float(request.form['distance'])
+        planet.planet_name = str(request.form['planet_name'])
+        db.session.commit()
+        return jsonify(message="Planet Updated"), 202
+    else:
+        return jsonify(message="There is no planet with that name"), 409
+
+@app.route('/delete_planet/<int:planet_id>', methods=['DELETE'])
+@jwt_required
+def remove_planet(planet_id: int):
+    planet = Planets.query.filter_by(planet_id=planet_id).first()
+    if planet:
+        db.session.delete(planet)
+        db.session.commit()
+        return jsonify(message="Planet Deleted"), 202
+    else:
+        return jsonify(message="There is no planet with that name"), 409
 
 
 # Database Models
